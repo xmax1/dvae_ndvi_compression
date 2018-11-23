@@ -149,7 +149,7 @@ class dataset():
     def next_batch(self, sess):
         """Return the next `batch_size` examples from this data set."""
         ### Only used to get mean x
-        data = self.flatten_flatten(sess.run(self.read_records()))
+        data = sess.run(self.read_records())
         return data
 
     def get_num_examples(self):

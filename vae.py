@@ -112,15 +112,15 @@ class VAE:
             wd = self.config['weight_decay']
             if self.dist_type == 'dvaes_gi':
                 rbm_prior = GuassianIntRBM(num_var1=num_var1, num_var2=num_var1, num_samples=1000, weight_decay=wd,
-                                           use_qupa=self.config['use_qupa'],
+                                           sampler_name=self.config['sampler_name'],
                                            minimum_lambda=self.config['beta'])
             elif self.dist_type in {'dvaes_gauss', 'dvaes_exp', 'dvaes_power', 'dvaes_unexp'}:
                 rbm_prior = MarginalRBMType1Generic(num_var1=num_var1, num_var2=num_var1, num_samples=1000, weight_decay=wd,
-                                                    use_qupa=self.config['use_qupa']
+                                                    sampler_name=self.config['sampler_name']
                                                     , smoothing_dist=self.smoothing_dist)
             elif self.dist_type in {'dvae_spike_exp', 'dvaepp_exp', 'dvaepp_power'}:
                 rbm_prior = RBM(num_var1=num_var1, num_var2=num_var1, num_samples=1000, weight_decay=wd,
-                                kld_term=self.dist_type, use_qupa=self.config['use_qupa'])
+                                kld_term=self.dist_type, sampler_name=self.config['sampler_name'])
             else:
                 raise NotImplementedError
 
