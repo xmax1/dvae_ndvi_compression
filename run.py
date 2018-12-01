@@ -21,7 +21,7 @@ flags.DEFINE_string('dataset', 'gimms',
 flags.DEFINE_string('struct', '1-layer-nonlin',
                     'Structure used in the encoder. Select one from: 1-layer-lin, 1-layer-nonlin, '
                     '2-layer-nonlin, 4-layer-nonlin')
-flags.DEFINE_string('baseline', 'dvaes_gi',
+flags.DEFINE_string('baseline', 'dvaes_power',
                     'Baseline used in training. Select one from: '
                     'dvae_spike_exp for DVAE (spike and exp), '
                     'dvaepp_exp for DVAE++ (exponential), '
@@ -32,7 +32,7 @@ flags.DEFINE_string('baseline', 'dvaes_gi',
                     'dvaes_unexp for DVAE# (uniform+exponential), '
                     'dvaes_power for DVAE# (power).')
 
-flags.DEFINE_string('sampler_name', 'dwave',
+flags.DEFINE_string('sampler_name', 'qupa',
                      'qupa, pcd or dwave are the optional strings Whether or not use Quadrant\'s population annealing (PA) for sampling. '
                      'Setting this flag to False will enable PCD sampling.')
 
@@ -68,10 +68,11 @@ def get_config(mean_x):
     baseline = FLAGS.baseline
     struct = FLAGS.struct
     sampler_name = FLAGS.sampler_name
+    num_latent_units = FLAGS.num_latent_units
 
     # set config train
     config_train = {'dataset': dataset, 'mean_x': mean_x, 'lr': base_lr, 'num_iter': num_iter, 'k_iw': eval_iw_samples,
-                    'batch_size': batch_size, 'k': k, 'data_dir': FLAGS.data_dir, 'sampler_name': sampler_name}
+                    'batch_size': batch_size, 'k': k, 'data_dir': FLAGS.data_dir, 'sampler_name': sampler_name, 'num_latent_units':num_latent_units}
 
     # The following sets beta
     if FLAGS.beta is not None:
@@ -175,9 +176,10 @@ def main(argv):
     datasets = input_data.Datasets(FLAGS.data_dir, batch_size=FLAGS.train_batchsize, eval_batch_size=FLAGS.eval_batchsize)
 
     # We need per pixel mean for normalizing input. This is from the original code. It is unclear if this is working as rqd
-    with tf.Session() as sess:
-        im = np.reshape(datasets.train.next_batch(sess), (-1, 28, 28))
-    mean_x = np.mean(im, axis=0)
+    # with tf.Session() as sess:
+    #     im = np.reshape(datasets.train.next_batch(sess), (-1, 28, 28))
+    # sess.close()
+    mean_x = None
 
     # get configurations
     config_train, config, config_recon = get_config(mean_x)

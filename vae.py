@@ -36,8 +36,8 @@ class VAE:
         self.config_train = config_train  # configuration dictionary for training hyper-parameters
 
         # bias term on the visible node
-        with tf.name_scope("bias-visable-node"):
-            self.train_bias = -np.log(1. / np.clip(self.config_train['mean_x'], 0.001, 0.999) - 1.).astype(np.float32)
+        # with tf.name_scope("bias-visable-node"):
+            # self.train_bias = -np.log(1. / np.clip(self.config_train['mean_x'], 0.001, 0.999) - 1.).astype(np.float32)
 
         self.dist_type = config['dist_type']  # flag indicating whether we have rbm prior.
         tf.summary.scalar('beta', config['beta'])
@@ -141,7 +141,9 @@ class VAE:
                 raise NotImplementedError
 
             output_activations = self.decoder.generator(prior_samples)
-            output_activations[0] = output_activations[0] + self.train_bias
+            # output_activations[0] = output_activations[0] + self.train_bias
+            output_activations[0] = output_activations[0]
+
             output_dist = FactorialBernoulliUtil(output_activations)
             output_samples = tf.nn.sigmoid(output_dist.logit_mu)
             return output_samples
@@ -166,8 +168,8 @@ class VAE:
         """
         with tf.name_scope("negative-elbo"):
             # subtract mean from input
-            encoder_input = input - self.config_train['mean_x']
-
+            # encoder_input = input - self.config_train['mean_x']
+            encoder_input = input
             # repeat the input if K > 1
             if k > 1:
                 encoder_input = repeat_input_iw(encoder_input, k)
@@ -185,7 +187,9 @@ class VAE:
                 output_activations = self.decoder.reconstruct(post_samples_concat, is_training)
 
             # add data bias
-            output_activations[0] = output_activations[0] + self.train_bias
+            # output_activations[0] = output_activations[0] + self.train_bias
+            output_activations[0] = output_activations[0]
+
             # form the output dist util.
             output_dist = FactorialBernoulliUtil(output_activations)
             # create the final output
