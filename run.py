@@ -173,7 +173,7 @@ def get_config(mean_x):
 
 
 def main(argv):
-    datasets = input_data.Datasets(FLAGS.data_dir, batch_size=FLAGS.train_batchsize, eval_batch_size=FLAGS.eval_batchsize)
+    # datasets = input_data.Datasets(FLAGS.data_dir, batch_size=FLAGS.train_batchsize, eval_batch_size=FLAGS.eval_batchsize)
 
     # We need per pixel mean for normalizing input. This is from the original code. It is unclear if this is working as rqd
     # with tf.Session() as sess:

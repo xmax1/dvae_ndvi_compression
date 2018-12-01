@@ -88,7 +88,7 @@ def run_training(vae, cont_train, config_train, log_dir):
         data_dir = config_train['data_dir']
         eval_batch_size = config_train['eval_batch_size']
         datasets = input_data.Datasets(data_dir, batch_size=batch_size, eval_batch_size=eval_batch_size, nTestYears=10,
-                                       patch_size=28, scale=1e-4)
+                                       patch_size=28, scale=1e-4,  binarize_threshold=0.0)
 
 
         ## NDVI DATA -- move import up top later
@@ -203,26 +203,27 @@ def run_training(vae, cont_train, config_train, log_dir):
         # Save a checkpoint and evaluate the model periodically.
         eval_iter = 20000 if num_iter > 1e5 else 10000
         if (step + 1) % eval_iter == 0 or (step + 1) == num_iter:
-            # if vae has rbm in its prior we should update its log Z.
-            if vae.should_compute_log_z():
-                vae.prior.estimate_log_z(sess)
-
-            # validate on the validation and test set
-            val_neg_elbo_value, val_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval,
-                                                            validation_data, datasets.validation, batch_size=eval_batch_size, k_iw=100)
-            test_neg_elbo_value, test_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval,
-                                                              test_data, datasets.test, batch_size=eval_batch_size, k_iw=100)
-            summary_str = sess.run(
-                eval_summary_op, feed_dict={val_neg_elbo: val_neg_elbo_value, test_neg_elbo: test_neg_elbo_value,
-                                            val_neg_ll: val_neg_ll_value, test_neg_ll: test_neg_ll_value})
-            summary_writer.add_summary(summary_str, step)
-
-            Print('Step %d: val ELBO = %.2f test ELBO = %.2f, val NLL = %.2f, test NLL = %.2f' %
-                  (step, val_neg_elbo_value, test_neg_elbo_value, val_neg_ll_value, test_neg_ll_value))
-            # save model if it is better on validation set:
-            if val_neg_ll_value < best_val_neg_ll:
-                best_val_neg_ll = val_neg_ll_value
-                saver.save(sess, log_dir + '/', global_step=step)
+            print 'Skipping'
+            # # if vae has rbm in its prior we should update its log Z.
+            # if vae.should_compute_log_z():
+            #     vae.prior.estimate_log_z(sess)
+            #
+            # # validate on the validation and test set
+            # val_neg_elbo_value, val_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval,
+            #                                                 validation_data, datasets.validation, batch_size=eval_batch_size, k_iw=100)
+            # test_neg_elbo_value, test_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval,
+            #                                                   test_data, datasets.test, batch_size=eval_batch_size, k_iw=100)
+            # summary_str = sess.run(
+            #     eval_summary_op, feed_dict={val_neg_elbo: val_neg_elbo_value, test_neg_elbo: test_neg_elbo_value,
+            #                                 val_neg_ll: val_neg_ll_value, test_neg_ll: test_neg_ll_value})
+            # summary_writer.add_summary(summary_str, step)
+            #
+            # Print('Step %d: val ELBO = %.2f test ELBO = %.2f, val NLL = %.2f, test NLL = %.2f' %
+            #       (step, val_neg_elbo_value, test_neg_elbo_value, val_neg_ll_value, test_neg_ll_value))
+            # # save model if it is better on validation set:
+            # if val_neg_ll_value < best_val_neg_ll:
+            #     best_val_neg_ll = val_neg_ll_value
+            #     saver.save(sess, log_dir + '/', global_step=step)
 
         # Write the summaries and print an overview fairly often.
 
@@ -238,25 +239,25 @@ def run_training(vae, cont_train, config_train, log_dir):
 
         # in the last iteration, we load the best model based on the validation performance, and evaluate it on test
         if (step + 1) == num_iter:
-            Print('Final evaluation using the best saved model')
-            # reload the best model this is good when a model overfits.
-            ckpt = tf.train.get_checkpoint_state(log_dir)
-            saver.restore(sess, ckpt.model_checkpoint_path)
-            Print('Done restoring the model at step: %d' % sess.run(get_global_step_var()))
-            if vae.should_compute_log_z():
-                vae.prior.estimate_log_z(sess)
-
-            val_neg_elbo_value, val_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval, input_val,
-                                                            datasets.validation, eval_batch_size, k_iw=100)
-            test_neg_elbo_value, test_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval, input_test,
-                                                              datasets.test, eval_batch_size, k_iw=config_train['k_iw'])
-            summary_str = sess.run(
-                eval_summary_op, feed_dict={val_neg_elbo: val_neg_elbo_value, test_neg_elbo: test_neg_elbo_value,
-                                            val_neg_ll: val_neg_ll_value, test_neg_ll: test_neg_ll_value})
-            Print('Step %d: val ELBO = %.2f test ELBO = %.2f, val NLL = %.2f, test NLL = %.2f' %
-                  (step, val_neg_elbo_value, test_neg_elbo_value, val_neg_ll_value, test_neg_ll_value))
-            summary_writer.add_summary(summary_str, step+1)
-            summary_writer.flush()
+            # Print('Final evaluation using the best saved model')
+            # # reload the best model this is good when a model overfits.
+            # ckpt = tf.train.get_checkpoint_state(log_dir)
+            # saver.restore(sess, ckpt.model_checkpoint_path)
+            # Print('Done restoring the model at step: %d' % sess.run(get_global_step_var()))
+            # if vae.should_compute_log_z():
+            #     vae.prior.estimate_log_z(sess)
+            #
+            # val_neg_elbo_value, val_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval, input_val,
+            #                                                 datasets.validation, eval_batch_size, k_iw=100)
+            # test_neg_elbo_value, test_neg_ll_value = evaluate(sess, neg_elbo_eval, log_iw_eval, input_test,
+            #                                                   datasets.test, eval_batch_size, k_iw=config_train['k_iw'])
+            # summary_str = sess.run(
+            #     eval_summary_op, feed_dict={val_neg_elbo: val_neg_elbo_value, test_neg_elbo: test_neg_elbo_value,
+            #                                 val_neg_ll: val_neg_ll_value, test_neg_ll: test_neg_ll_value})
+            # Print('Step %d: val ELBO = %.2f test ELBO = %.2f, val NLL = %.2f, test NLL = %.2f' %
+            #       (step, val_neg_elbo_value, test_neg_elbo_value, val_neg_ll_value, test_neg_ll_value))
+            # summary_writer.add_summary(summary_str, step+1)
+            # summary_writer.flush()
 
             ### Then we calculate the psnr and ssim
             for i in range(10):
@@ -271,6 +272,6 @@ def run_training(vae, cont_train, config_train, log_dir):
 
             sess.close()
             tf.reset_default_graph()
-            return test_neg_ll_value
+            return
 
 

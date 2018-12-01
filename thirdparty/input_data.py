@@ -234,6 +234,7 @@ class dataset():
             dataset = tf.data.TFRecordDataset(filenames)
             dataset = dataset.map(parser)
             dataset = dataset.shuffle(buffer_size=buffer_size)
+            dataset = dataset.repeat()
             dataset = dataset.batch(self.batch_size)
             dataset = dataset.make_one_shot_iterator()
             self._images = dataset.get_next()
